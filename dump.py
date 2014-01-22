@@ -17,7 +17,6 @@ TEMP_RESULT_FILE_NAME = 'result.txt.tmp'
 RESULT_FILE_NAME = 'result.txt'
 
 def get_content_from_remote(path):
-  print 'downloading content from %s ... ' % path
   url = '%s%s' % (URL_ROOT, path)
   request = urllib2.Request(url)
   return urllib2.urlopen(request).read()
@@ -26,6 +25,7 @@ def get_html_content(path):
   return get_content_from_remote(path)
 
 def get_tar_gz_file(path):
+  print 'downloading gz from %s ... ' % path
   content = get_content_from_remote(path)
   return tarfile.open(fileobj=StringIO(content))
 
@@ -55,6 +55,8 @@ def dump_gz_file(path):
     names = tarfile.getnames()
     for name in names:
       print >> result_file, path + '/' + name
+  except KeyboardInterrupt:
+    raise  # we don't catch ctrl+c
   except:
     print >> sys.stderr, 'unable to untar file: %s' % path
 
@@ -67,7 +69,7 @@ def recursive_dump_file_on_html(path):
     type = href_and_type[1]
     if type == BACK_IMG:
       continue			# ignore Parent Directory
-    print '(%d/%d), ' % (index, total_count),
+    print '(%d/%d), ' % (index, total_count-1),  # ignore Parent Directory
     new_path = path + href
     if type == FOLDER_IMG:
       print 'found type: folder, href: %s => %s' % (path, href)
